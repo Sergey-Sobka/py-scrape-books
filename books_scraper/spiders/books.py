@@ -1,4 +1,5 @@
 import re
+from collections.abc import Iterator
 from typing import Any
 
 import scrapy
@@ -21,7 +22,11 @@ class BooksSpider(scrapy.Spider):
         "Five": 5,
     }
 
-    def parse(self, response: Response, **kwargs: Any):
+    def parse(
+        self,
+        response: Response,
+        **kwargs: Any,
+    ) -> Iterator[scrapy.Request]:
         book_links = response.css(
             "article.product_pod h3 a::attr(href)"
         ).getall()
@@ -101,9 +106,11 @@ class BooksSpider(scrapy.Spider):
 
     @staticmethod
     def parse_description(response: Response) -> str:
-        return response.css(
+        description = response.css(
             "#product_description + p::text"
         ).get(default="").strip()
+
+        return description or "No description available."
 
     @staticmethod
     def parse_upc(response: Response) -> str:
